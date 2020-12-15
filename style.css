@@ -13,6 +13,10 @@ html, body {
     font-family: "Avenir Next";
   }
 
+#anonymousPanel {
+  background-color: yellow;
+}
+
   .action {
     color: #2196F3;
     cursor: pointer;
