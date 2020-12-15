@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="description" content="Multivariate Select Test">
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Multivariate Select Test</title>
+  
+  <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light/main.css">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://js.arcgis.com/4.17/"></script>
+
+</head>
+<body>
+  <!-- AUTH -->
+  <div id="anonymousPanel" style="display: none; padding: 5px; text-align: center;">
+    <span id="sign-in" class="action">Sign In</span> and view your application.
+    </div>
+
+    <div id="personalizedPanel" style="display: none; padding: 5px; text-align: center;">
+    Welcome <span id="userId" style="font-weight: bold;"></span> &nbsp;-&nbsp;
+    <span id="sign-out" class="action">Sign Out</span>
+    </div>
+  
+  <!-- APP -->
+  <div id="appContainer" class="wrapper">
+    <div class="box header" id="titleDiv">FY20 Registrations by Supervisor and Age Group</div>
+    <div class="box sidebar">
+      <h2>Variable Selectors</h2>
+      <section id="inputs">
+        <button type="button" id="update-map">Update Map</button>
+        <form>
+          <fieldset>
+            <legend>Supervisor</legend>
+            <div id="supervisor-checkbox-list"></div>
+            <div id="supervisor-toggle-btns">
+              <button type="button" id="supervisor-select-all">Select All</button>
+              <button type="button" id="supervisor-clear-all">Clear All</button><br>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Age Group</legend>
+            <div id="age-checkbox-list"></div>
+            <div id="age-toggle-btns">
+              <button type="button" id="age-select-all">Select All</button>
+              <button type="button" id="age-clear-all">Clear All</button><br>
+            </div>
+          </fieldset>
+        </form>
+      </section>
+      <br>
+      <section>
+        <div id="containerDiv" class="esri-widget">
+          <div id="slider"></div>
+        </div>
+      </section>
+    </div>
+    <div class="map" id="viewDiv"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
