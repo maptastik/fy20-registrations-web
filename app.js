@@ -292,7 +292,7 @@ require([
             colorScheme: {
               id: "custom-scheme",
               colors: colorRamp,
-              noDataColor: [0,0,0],
+              noDataColor: "#e6e4e1",
               colorsForClassBreaks: [
                 {
                   colors: colorRamp,
