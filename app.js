@@ -12,6 +12,7 @@ require([
   // "esri/smartMapping/symbology/color/ColorScheme",
   "esri/smartMapping/statistics/histogram",
   "esri/widgets/smartMapping/ColorSlider",
+  "esri/widgets/Compass",
   "esri/widgets/Legend",
   "esri/widgets/LayerList",
   "esri/widgets/Expand",
@@ -28,6 +29,7 @@ require([
              colorSchemes,
              histogram,
              ColorSlider,
+             Compass,
              Legend,
              LayerList,
              Expand,
@@ -271,6 +273,10 @@ require([
       container: "viewDiv",
       map: map
     });
+    const compass = new Compass({
+      view: view
+    });
+    view.ui.add(compass, "top-left");
 
     // const initialRender;
     let regFieldInfos = {}
