@@ -13,10 +13,30 @@ require([
   "esri/smartMapping/statistics/histogram",
   "esri/widgets/smartMapping/ColorSlider",
   "esri/widgets/Legend",
+  "esri/widgets/LayerList",
+  "esri/widgets/Expand",
   "esri/core/watchUtils"
-], function (Portal, OAuthInfo, esriId, PortalQueryParams, Map, MapView, GeoJSONLayer, FeatureLayer, colorRendererCreator, colorSchemes, histogram, ColorSlider, Legend, watchUtils) {
+], function (Portal,
+             OAuthInfo,
+             esriId,
+             PortalQueryParams,
+             Map,
+             MapView,
+             GeoJSONLayer,
+             FeatureLayer,
+             colorRendererCreator,
+             colorSchemes,
+             histogram,
+             ColorSlider,
+             Legend,
+             LayerList,
+             Expand,
+             watchUtils) {
 
-  // AUTHENTICATION
+  /* ####################
+     ## AUTHENTICATION ##
+     #################### */
+
   var personalPanelElement = document.getElementById(
     "personalizedPanel");
   var anonPanelElement = document.getElementById("anonymousPanel");
@@ -59,7 +79,10 @@ require([
       window.location.reload();
     });
 
-  // MAP
+  /* ######### 
+     ## MAP ##
+     ######### */
+
   function drawMap() {
 
     // UI Handlers
@@ -255,10 +278,23 @@ require([
       portalItem: {
         id: '264190b18b3746a7a0f6df5d9fac98fe'
       },
-      outFields: ["*"]
+      outFields: ["*"],
+      title: "FY20 Registrations by Census Block Group"
     })
 
     map.add(regLayer)
+
+    // Expandable Layer List
+    const layerList = new LayerList({
+      view: view,
+      container: document.createElement("div")
+    })
+
+    const llExpand = new Expand({
+      view: view,
+      content: layerList
+    })
+    view.ui.add(llExpand, "top-right")
 
     // // Initial Rendeer
     let valueExpression = "$feature.p_count + $feature.y_count + $feature.t_count + $feature.a_count + $feature.s_count / ($feature.households_esri_2020 / 100)"
