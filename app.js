@@ -4,14 +4,16 @@ require([
   "esri/identity/IdentityManager",
   "esri/portal/PortalQueryParams",
   "esri/Map",
+  "esri/Basemap",
   "esri/views/MapView",
-  "esri/layers/GeoJSONLayer",
   "esri/layers/FeatureLayer",
+  "esri/layers/VectorTileLayer",
   "esri/smartMapping/renderers/color",
   "esri/smartMapping/symbology/color",
   // "esri/smartMapping/symbology/color/ColorScheme",
   "esri/smartMapping/statistics/histogram",
   "esri/widgets/smartMapping/ColorSlider",
+  "esri/widgets/BasemapGallery",
   "esri/widgets/Compass",
   "esri/widgets/Legend",
   "esri/widgets/LayerList",
@@ -22,13 +24,15 @@ require([
              esriId,
              PortalQueryParams,
              Map,
+             Basemap,
              MapView,
-             GeoJSONLayer,
              FeatureLayer,
+             VectorTileLayer,
              colorRendererCreator,
              colorSchemes,
              histogram,
              ColorSlider,
+             BasemapGallery,
              Compass,
              Legend,
              LayerList,
@@ -267,28 +271,111 @@ require([
 
 
     const map = new Map({
-      basemap: "gray-vector"
+      basemap: "arcgis-light-gray"
     });
     const view = new MapView({
       container: "viewDiv",
-      map: map
+      map: map,
+      constraints: {
+        minZoom: 9,
+        maxZoom: 12
+      }
     });
     const compass = new Compass({
       view: view
     });
     view.ui.add(compass, "top-left");
 
-    // const initialRender;
-    let regFieldInfos = {}
+    // LAYERS
+
+    // Registrations
     const regLayer = new FeatureLayer({
       portalItem: {
         id: '264190b18b3746a7a0f6df5d9fac98fe'
       },
       outFields: ["*"],
-      title: "FY20 Registrations by Census Block Group"
+      title: "FY20 Registrations by Census Block Group",
     })
+    map.add(regLayer);
 
-    map.add(regLayer)
+    // Block Group Outline Layer
+    const bgOutlineLayer = new FeatureLayer({
+      url: "https://services1.arcgis.com/a7CWfuGP5ZnLYE7I/arcgis/rest/services/CensusBlockGroups2010/FeatureServer/0",
+      outFields: "GEOID10",
+      renderer: {
+        type: "simple",
+        symbol: {
+          type: "simple-line",
+            color: "#323232",
+            width: 0.25,
+
+        }
+      },
+      title: "Census Block Group Outlines",
+      labelsVisible: false,
+      visible: false
+    })
+    map.add(bgOutlineLayer)
+
+    // Low-Moderate Income       
+    const lowIncomeLayer = new FeatureLayer({
+      portalItem: {
+        id: "a5138e08e6964a1bb0d4fa83ade7fb67"
+      },
+      outFields: ["geoid10", "ral_bg", "households_acshhbpov_p"],
+      popupEnables: false,
+      definitionExpression: "households_acshhbpov_p >= 20",
+      title: "Low Income Block Groups (2014-2018)",
+      renderer: {
+        type: "simple",
+        symbol: {
+          type: "simple-marker",
+          style: "square",
+          color: "#78909C",
+          outline: {
+            color: "black",
+            width: 0.5
+          },
+          size: 5,
+          xoffset: -3,
+        }
+      },
+      visible: true,
+      minScale: 300000
+    })
+    map.add(lowIncomeLayer);
+
+    // High Vulnerability 
+    const svLayer = new FeatureLayer({
+      url: "https://maps.wakegov.com/arcgis/rest/services/Social_Equity/Vulnerability_Assessment_Index_Series_2018/MapServer/0",
+      definitionExpression: "TOTAL_SCORE > 340",
+      title: "Highest Vulnerability Wake County Census Block Groups (2014-2018)",
+      renderer: {
+        type: "simple",
+        symbol: {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          style: "square",
+          color: "#FFCC80",
+          outline: {
+            color: "black",
+            width: 0.5
+          },
+          size: 5,
+          xoffset: 3,
+        }
+      },
+      visible: true,
+      minScale: 300000
+    })
+    map.add(svLayer)
+
+    // Reference Layer
+    const referenceLayer = new VectorTileLayer({
+      url: "https://ral.maps.arcgis.com/sharing/rest/content/items/30d6b8271e1849cd9c3042060001f425/resources/styles/root.json?f=pjson",
+      title: "Roads/Places Reference",
+      visible: false
+    })
+    map.add(referenceLayer)
 
     // Expandable Layer List
     const layerList = new LayerList({
@@ -298,9 +385,26 @@ require([
 
     const llExpand = new Expand({
       view: view,
-      content: layerList
+      content: layerList,
+      group: "top-right",
+      expandTooltip: "Expand: Toggle Layers",
+      expanded: true
     })
     view.ui.add(llExpand, "top-right")
+
+    // Expandable Basemap Gallery
+    const basemapGallery = new BasemapGallery({
+      view: view,
+      container: document.createElement("div")
+    })
+    console.log(basemapGallery)
+    const basemapExpand = new Expand({
+      view: view,
+      content: basemapGallery,
+      group: "top-right",
+      expandTooltip: "Expand: Change Basemap"
+    })
+    view.ui.add(basemapExpand, "top-right")
 
     // // Initial Rendeer
     let valueExpression = "$feature.p_count + $feature.y_count + $feature.t_count + $feature.a_count + $feature.s_count / ($feature.households_esri_2020 / 100)"
@@ -314,10 +418,16 @@ require([
                 view: view,
                 container: "containerDiv",
                 layerInfos: [
+                  {
+                    layer: svLayer
+                  },
+                  {
+                    layer: lowIncomeLayer
+                  },
                     {
                         layer: regLayer,
                         title: "Registrations per 100 Households by Selected Age Group(s) and Supervisor(s)"
-                    }
+                    },
                 ]
             })
         })
@@ -327,6 +437,7 @@ require([
     function generateRenderer(layer, map, view, theme, valueExpression) {
       
       const colorRamp = [ "#e6e4e1", "#d9d7d6", "#a3af96", "#7c9e14", "#4e6605" ];
+      // const colorRamp = ['#ffffcc','#c2e699','#78c679','#31a354','#006837']
       const colorParams = {
             layer: layer,
             view: view,
@@ -343,7 +454,7 @@ require([
               ],
               outline: {
                 color: "#f7f7f7",
-                width: "0.1px"
+                width: "0"
               },
               opacity: 1
             },
