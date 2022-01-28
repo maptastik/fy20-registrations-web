@@ -49,9 +49,8 @@ require([
   var userIdElement = document.getElementById("userId");
 
   var info = new OAuthInfo({
-    // Swap this ID out with registered application ID
-    appId: "VchNV5mIbOBwksHv",
-    // Uncomment the next line and update if using your own portal
+    // appId from https://ral.maps.arcgis.com/home/item.html?id=45cdf5dbcde94d5d88df9fb0b4cb3c5a
+    appId: "yv1LycMxJxJCK2kR",
     portalUrl: "https://ral.maps.arcgis.com",
     // Uncomment the next line to prevent the user's signed in state from being shared with other apps on the same domain with the same authNamespace value.
     // authNamespace: "portal_oauth_inline",
