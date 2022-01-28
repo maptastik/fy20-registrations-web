@@ -1,12 +1,9 @@
 require([
-  "esri/portal/Portal",
-  "esri/identity/OAuthInfo",
-  "esri/identity/IdentityManager",
-  "esri/portal/PortalQueryParams",
   "esri/Map",
   "esri/Basemap",
   "esri/views/MapView",
   "esri/layers/FeatureLayer",
+  "esri/layers/GeoJSONLayer",
   "esri/layers/VectorTileLayer",
   "esri/smartMapping/renderers/color",
   "esri/smartMapping/symbology/color",
@@ -19,14 +16,11 @@ require([
   "esri/widgets/LayerList",
   "esri/widgets/Expand",
   "esri/core/watchUtils"
-], function (Portal,
-             OAuthInfo,
-             esriId,
-             PortalQueryParams,
-             Map,
+], function (Map,
              Basemap,
              MapView,
              FeatureLayer,
+             GeoJSONLayer,
              VectorTileLayer,
              colorRendererCreator,
              colorSchemes,
@@ -39,50 +33,7 @@ require([
              Expand,
              watchUtils) {
 
-  /* ####################
-     ## AUTHENTICATION ##
-     #################### */
-
-  var personalPanelElement = document.getElementById(
-    "personalizedPanel");
-  var anonPanelElement = document.getElementById("anonymousPanel");
-  var userIdElement = document.getElementById("userId");
-
-  var info = new OAuthInfo({
-    // appId from https://ral.maps.arcgis.com/home/item.html?id=45cdf5dbcde94d5d88df9fb0b4cb3c5a
-    appId: "yv1LycMxJxJCK2kR",
-    portalUrl: "https://ral.maps.arcgis.com",
-    // Uncomment the next line to prevent the user's signed in state from being shared with other apps on the same domain with the same authNamespace value.
-    // authNamespace: "portal_oauth_inline",
-    popup: false
-  });
-  esriId.registerOAuthInfos([info]);
-
-  esriId.checkSignInStatus(info.portalUrl + "/sharing")
-    .then(
-      function () {
-        drawMap();
-      }
-    ).catch(
-      function (err) {
-        // Anonymous view
-        console.log(err)
-        anonPanelElement.style.display = "block";
-        personalPanelElement.style.display = "none";
-      }
-    );
-
-  document.getElementById("sign-in").addEventListener("click", function () {
-    // user will be redirected to OAuth Sign In page
-    esriId.getCredential(info.portalUrl + "/sharing");
-    console.log('clicked!')
-  });
-
-  document.getElementById("sign-out").addEventListener("click",
-    function () {
-      esriId.destroyCredentials();
-      window.location.reload();
-    });
+  drawMap()
 
   /* ######### 
      ## MAP ##
@@ -270,7 +221,7 @@ require([
 
 
     const map = new Map({
-      basemap: "arcgis-light-gray"
+      basemap: "gray-vector"
     });
     const view = new MapView({
       container: "viewDiv",
@@ -288,10 +239,8 @@ require([
     // LAYERS
 
     // Registrations
-    const regLayer = new FeatureLayer({
-      portalItem: {
-        id: '264190b18b3746a7a0f6df5d9fac98fe'
-      },
+    const regLayer = new GeoJSONLayer({
+      url: "./data/fy20_registrants_supervisor_v2_2_bg.geojson",
       outFields: ["*"],
       title: "FY20 Registrations by Census Block Group",
     })
@@ -317,10 +266,8 @@ require([
     map.add(bgOutlineLayer)
 
     // Low-Moderate Income       
-    const lowIncomeLayer = new FeatureLayer({
-      portalItem: {
-        id: "a5138e08e6964a1bb0d4fa83ade7fb67"
-      },
+    const lowIncomeLayer = new GeoJSONLayer({
+      url: "./data/prcr_registrations_1819_bg.geojson",
       outFields: ["geoid10", "ral_bg", "households_acshhbpov_p"],
       popupEnables: false,
       definitionExpression: "households_acshhbpov_p >= 20",
